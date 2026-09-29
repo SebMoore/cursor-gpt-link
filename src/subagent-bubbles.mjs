@@ -43,6 +43,8 @@ const bubbleSymbols = {
               glass:  {trim:'eae',task:'yt.TASK_V2', params:'iUe', former:'io.TOOL_FORMER'}},
   '3.22.9': {desktop:{trim:'cY', task:'Ze.TASK_V2', params:'n5e', former:'rs.TOOL_FORMER'},
               glass:  {trim:'eae',task:'yt.TASK_V2', params:'rUe', former:'so.TOOL_FORMER'}},
+  '3.22.12': {desktop:{trim:'uY', task:'Ze.TASK_V2', params:'s5e', former:'rs.TOOL_FORMER'},
+              glass:  {trim:'eae',task:'yt.TASK_V2', params:'sUe', former:'so.TOOL_FORMER'}},
 };
 
 export function patchSubagentBubbles(source, surface, version = '3.20.17') {

@@ -8,8 +8,9 @@ This release targets the reviewed Windows builds listed below. It is not a gener
 
 | Item | Current status |
 | --- | --- |
-| Cursor | 3.22.9, 3.22.5, 3.21.18, 3.21.16, 3.21.13, 3.21.12, 3.21.9, 3.21.1, 3.20.23, 3.20.21, 3.20.17, 3.20.11 and 3.20.7, Windows x64 |
-| Latest Cursor commit | `2ca0f45baa06796a86f6c6ba2b9bedacaf94c370` (3.22.9) |
+| Cursor | 3.22.12, 3.22.9, 3.22.5, 3.21.18, 3.21.16, 3.21.13, 3.21.12, 3.21.9, 3.21.1, 3.20.23, 3.20.21, 3.20.17, 3.20.11 and 3.20.7, Windows x64 |
+| Latest Cursor commit | `3a92974361033b2051526321308c2740fe5912c0` (3.22.12) |
+| Cursor 3.22.9 commit | `2ca0f45baa06796a86f6c6ba2b9bedacaf94c370` |
 | Cursor 3.22.5 commit | `a00aa8754ab5bae70b637d98e126f9dbd4e1e5d0` |
 | Cursor 3.21.18 commit | `c4730f7d93d787d9ab120af715999f0345ee5bc0` |
 | Cursor 3.21.16 commit | `8ae78e8eee1e63479c7e0504b664bc0a80c68000` |
@@ -20,7 +21,7 @@ This release targets the reviewed Windows builds listed below. It is not a gener
 | Previous Cursor commit | `b23e0e2d3c0fc9bb9311f4390230a120ccc9aa50` (3.20.23) |
 | Cursor 3.20.11 commit | `69d099d6568dc97e110ba8184614faf51c4040b0` |
 | Oldest Cursor commit | `979197d5570b168c034c634b3e21f2bea3ea5be0` (3.20.7) |
-| Latest local test date | September 26, 2026 |
+| Latest local test date | September 29, 2026 |
 | Node.js used for testing | 26.7.0 |
 | Codex CLI used for testing | 0.153.4 |
 | Text generation through the bridge | Verified with GPT-6 Astra |
@@ -32,6 +33,8 @@ This release targets the reviewed Windows builds listed below. It is not a gener
 | Fast mode | Selector and request forwarding verified; actual priority processing not confirmed |
 
 Remote SSH sessions changed with 3.22.9. Until then a remote session kept the agent in Cursor's dedicated UI runtime so that the bridge, which listens on the client's loopback, stayed reachable. That runtime resolves paths with the client's own path module: on a Windows client against a Linux host, the workspace path `/srv/app` became `C:\\srv\\app`, and the runtime then looked there for `.cursor/rules`, ran `git rev-parse` in it, walked its ignore files up to the drive root and built the sandbox policy from it. From 3.22.9 the agent runs on the SSH host, where the workspace actually is, and the bridge is published on that host's loopback with an ssh reverse forward that `cursor-gpt-link` writes into `~/.ssh/config`. See [Remote sessions](#remote-sessions).
+
+Cursor 3.22.12 renamed 30 of the 50 derived symbols on each surface and changed nothing the patches anchor to. The extractor now lives in the repository as `scripts/derive-symbols.mjs`, which is how this port started: it reproduced every reviewed 3.22.9 value before it was used here. Both runtime bundles needed no change. All automated checks pass and the three patches were installed together on a local 3.22.12. Live model selection, tool calls, file edits, remote SSH and attachment workflows have not been confirmed on this build.
 
 Cursor 3.22.9 renamed symbols again and changed nothing else: 16 of 50 in the editor, 31 of 50 in the Agents Window. The anchors the minor release had moved a build earlier, the model map and `subscribeHeaders`, stayed as 3.22.5 left them, and both runtime bundles are unchanged. The extractor reproduced every reviewed 3.22.5 value before it was used here. All automated checks pass and the three patches were installed together on a local 3.22.9. Live model selection, tool calls, file edits, remote SSH and attachment workflows have not been confirmed on this build.
 
@@ -228,7 +231,10 @@ Run `npm run test:attachments` against an installed bridge to repeat the image a
 ```powershell
 npm test
 node scripts/verify-build.mjs "C:\Path\To\Original\Cursor\resources\app"
+node scripts/derive-symbols.mjs "C:\Path\To\Original\Cursor\resources\app"
 ```
+
+`derive-symbols` locates each minified workbench symbol by the role it plays rather than by name, and fails if a match is missing or ambiguous. Run it against the previous build first: reproducing that build's reviewed values is what makes the output for a new one trustworthy. Names are recycled between builds, so the result is reviewed and committed as a build's patch definitions instead of being derived at install time.
 
 Unit tests use synthetic credentials and model data and do not make requests to OpenAI. The optional build verification reads original Cursor files locally, validates hashes, generates candidate patches in a temporary directory, checks syntax and exercises reasoning and Fast forwarding. It does not modify Cursor. No Cursor binaries, bundled source, model caches or account files are distributed here.
 
