@@ -64,7 +64,7 @@ On Cursor 3.20.21 and 3.20.23, stopping a subscription chat also cancels its act
 On Cursor 3.20.21 and 3.20.23, queued follow-ups are forwarded to the local runtime. Starting Build also preserves human messages that have not reached the conversation checkpoint yet. Delivery is confirmed by native message events, and stopping the chat prevents queued work from starting another run. Automated queue and build checks passed; manual Plan-to-Build validation is pending.
 
 
-Cursor 3.23.23 has reviewed anchors and original file hashes for both workbenches and both local runtimes. Its model map and Plan & Usage children changed, the task factory now uses a nullish provider fallback, and the runtime engine awaits `runStream` with renamed protobuf exports. The shared patch functions accept the older forms as well. Automated build verification passes against the original local installation, including syntax, subscription UI, routing, queued actions, subagents, context budgets, reasoning and Fast forwarding. This patch has not been installed or tested through live Cursor conversations on 3.23.23.
+Cursor 3.23.23 has reviewed anchors and original file hashes for both workbenches and both local runtimes. Its model map and Plan & Usage children changed, the task factory now uses a nullish provider fallback, and the runtime engine awaits `runStream` with renamed protobuf exports. The shared patch functions accept the older forms as well. Automated build verification passes against the original local installation, including syntax, subscription UI, routing, queued actions, subagents, context budgets, reasoning and Fast forwarding. The patch was installed locally on October 7, 2026 and all installed file hashes verified. Live Cursor conversations on 3.23.23 remain unconfirmed.
 
 ## Remote sessions
 
@@ -177,7 +177,7 @@ The earlier patch ran model requests in the workspace extension host. In an SSH 
 
 Responses and remote file edits have been confirmed in a manual SSH test after the fix. Both workbench routing methods are checked against the supported builds. Separate manual Agents Window coverage is still pending.
 
-To upgrade an existing public installation, close Cursor, run `node patcher.mjs restore` using the same state directory, update this repository with `git pull`, then run `node patcher.mjs install`. For a private prototype, use its original restore command first.
+To upgrade the patch on the same Cursor build, close Cursor, run `node patcher.mjs restore` using the same state directory, update this repository with `git pull`, then run `node patcher.mjs install`. If Cursor has already updated to a supported build, close Cursor and run `npm run install-patch` directly. The installer verifies every target against the new build's original hashes and checks that the old record names the same installation. Once the candidate patches pass syntax checks, it archives the superseded record and installs the new patch. Old records and backups are retained. For a private prototype, use its original restore command first.
 
 ## Check or remove the patch
 
@@ -193,7 +193,7 @@ npm run uninstall
 
 This is equivalent to `node patcher.mjs restore`. If Claude is also installed, remove it first with `npm run uninstall` in its repository. Then remove ChatGPT. Backups restore the state before each patch; removing the underlying patch first can invalidate the other installation manifest.
 
-Restore verifies both the installed files and the backups before copying originals back. Backups are retained. It refuses to overwrite files changed by a Cursor update or another patch. If an update has replaced the application, use a clean Cursor installation instead of forcing old backups over the new version. The patcher has no force option.
+Restore verifies both the installed files and the backups before copying originals back. Backups are retained. It refuses to overwrite files changed by a Cursor update or another patch. If an update has replaced the application with a supported original build, run `npm run install-patch` to archive the stale record and install for the new build. Mixed, modified or unreviewed application files still require a clean supported Cursor installation. The patcher has no force option.
 
 Restoring removes the autostart code. An already running bridge can remain until it is stopped or Windows is restarted. It accepts requests only with its local key. You can inspect its process command line for the `cursor-gpt-link\runtime\bridge.mjs` path before stopping that process. The patcher does not stop unrelated Node.js processes.
 

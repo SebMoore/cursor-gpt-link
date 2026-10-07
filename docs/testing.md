@@ -77,7 +77,11 @@ Both extension runtimes changed beyond identifier rotation: the task factory fol
 
 `npm test` and `scripts/verify-build.mjs` pass. The latter generates temporary candidates without changing the installation, syntax-checks every JavaScript target and exercises both surfaces and both runtimes: subscription settings and login registration, queued actions and Build forwarding, stop and transcript lifecycle, Task registration, native SSH routing, Explore selection, inherited models, context limits, reasoning and Fast. The desktop checksum matches the patched product metadata.
 
-Not verified: installation into the live application, model selection and conversations in either window, tool calls and file edits, remote SSH turns, attachments, or coexistence with companion links. No Cursor source or credentials are committed. Earlier original builds were unavailable for full regression verification.
+Installed locally on October 7, 2026 after confirming Cursor was closed and stopping the exact old bridge process still listening on port 43187. The updater had replaced all six 3.22.12 targets, leaving its installation manifest behind. The installer now archives that manifest after verifying the same target paths and the new build's pristine hashes, preparing candidate patches and checking their syntax. Previous backups are retained. `node patcher.mjs status` reports `Cursor 3.23.23: patched files verified`.
+
+All 95 unit tests pass, including a simulated upgrade, reinstall and restore that returns the new build's original bytes. Modified, missing, mismatched, duplicated and same-build targets cannot archive a record. Restore continues to refuse old backups over an updated application.
+
+Not verified: model selection and conversations in either window, tool calls and file edits, remote SSH turns, attachments, or coexistence with companion links. No Cursor source or credentials are committed. Earlier original builds were unavailable for full regression verification.
 
 ## Cursor 3.22.12 update
 

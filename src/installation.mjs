@@ -4,6 +4,37 @@ import crypto from 'node:crypto';
 
 export const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
+// Cursor's updater can replace every patched file while leaving our record.
+// Only retire that record when the same targets match a reviewed pristine build.
+export function verifySupersededInstallation(manifestPath, {root, build}) {
+  if (!fs.existsSync(manifestPath)) return null;
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  if (manifest.version === build.version && manifest.commit === build.commit) {
+    throw new Error('Installation already recorded for this Cursor build. Use status or restore first.');
+  }
+  const canonical = file => process.platform === 'win32' ? path.resolve(file).toLowerCase() : path.resolve(file);
+  const targets = new Map(Object.entries(build.files).map(([relative, expected]) => [canonical(path.join(root, relative)), expected]));
+  const recorded = new Set((manifest.files ?? []).map(file => canonical(file.path)));
+  if (!targets.size || recorded.size !== targets.size || manifest.files.length !== targets.size ||
+      [...recorded].some(file => !targets.has(file))) {
+    throw new Error('Recorded installation targets differ from this Cursor installation; upgrade stopped.');
+  }
+  for (const [relative, expected] of Object.entries(build.files)) {
+    const file = path.join(root, relative);
+    if (!fs.existsSync(file) || hash(fs.readFileSync(file)) !== expected) {
+      throw new Error('Current Cursor files are not the reviewed original build; upgrade stopped: ' + file);
+    }
+  }
+  return manifest;
+}
+
+export function archiveSupersededInstallation(manifestPath, options) {
+  if (!verifySupersededInstallation(manifestPath, options)) return null;
+  const archived = manifestPath + '.superseded-' + Date.now() + '-' + crypto.randomUUID();
+  fs.renameSync(manifestPath, archived);
+  return archived;
+}
+
 export function installFiles(pending, {backupDir, manifestPath, version, commit}) {
   if (fs.existsSync(manifestPath)) throw new Error('An installation manifest already exists.');
   const manifest = {version, commit, installedAt:new Date().toISOString(), files:[]};

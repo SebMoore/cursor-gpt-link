@@ -7,7 +7,7 @@ import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {buildPatches} from './src/patches.mjs';
 import {supportedBuild} from './src/supported-builds.mjs';
-import {installFiles, restoreFiles, hash} from './src/installation.mjs';
+import {installFiles, restoreFiles, hash, verifySupersededInstallation, archiveSupersededInstallation} from './src/installation.mjs';
 import {stateDir, configPath} from './src/config.mjs';
 
 const sourceDir = path.dirname(fileURLToPath(import.meta.url));
@@ -123,16 +123,15 @@ Close Cursor before install or restore. See README.md for requirements.`);
   validate(root);
   if (command === 'check') { console.log('Supported original Cursor ' + build.version + ' build verified.'); return; }
   requireClosedCursor();
-  if (fs.existsSync(manifestPath)) throw new Error('Installation already recorded. Use status or restore first.');
+  const superseded = verifySupersededInstallation(manifestPath, {root, build});
   const port = Number(options.port || 43187);
   if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('Port must be an integer between 1024 and 65535.');
   await availablePort(port);
   const cfg = {port, key:crypto.randomBytes(32).toString('hex'), codex:codexPath(),
     codexHome:path.resolve(options['codex-home'] || process.env.CODEX_HOME || path.join(os.homedir(), '.codex'))};
   fs.mkdirSync(stateDir, {recursive:true});
-  fs.writeFileSync(configPath, JSON.stringify(cfg, null, 2), {mode:0o600});
-  // The bridge module is imported only after writing configuration.
-  // config.mjs was loaded earlier, so update the shared object before importing it.
+  // Prepare candidates using the shared in-memory config. Persist it only after
+  // all candidates pass, so a failed preparation keeps the installed config.
   const {config} = await import('./src/config.mjs');
   Object.assign(config, cfg);
   const pending = await prepare(root, cfg);
@@ -148,7 +147,13 @@ Close Cursor before install or restore. See README.md for requirements.`);
   }
   const runtime = path.join(stateDir, 'runtime');
   fs.mkdirSync(runtime, {recursive:true});
+  fs.writeFileSync(configPath, JSON.stringify(cfg, null, 2), {mode:0o600});
   for (const name of ['bridge.mjs', 'config.mjs', 'openai-icon.mjs', 'model-tooltip.mjs', 'context-options.mjs']) fs.copyFileSync(path.join(sourceDir, 'src', name), path.join(runtime, name));
+  if (superseded) {
+    const archived = archiveSupersededInstallation(manifestPath, {root, build});
+    console.log('Cursor update replaced the ' + superseded.version + ' patch. Archived its installation record: ' + archived);
+    console.log('Previous backups retained; no old Cursor files restored.');
+  }
   installFiles(pending, {backupDir, manifestPath, version:build.version, commit:build.commit});
   console.log('Installed. Start Cursor and select a model with the OpenAI symbol.');
 }
