@@ -64,20 +64,29 @@ On Cursor 3.20.21 and 3.20.23, stopping a subscription chat also cancels its act
 On Cursor 3.20.21 and 3.20.23, queued follow-ups are forwarded to the local runtime. Starting Build also preserves human messages that have not reached the conversation checkpoint yet. Delivery is confirmed by native message events, and stopping the chat prevents queued work from starting another run. Automated queue and build checks passed; manual Plan-to-Build validation is pending.
 
 
-Cursor 3.23.23 has reviewed anchors and original file hashes for both workbenches and both local runtimes. Its model map and Plan & Usage children changed, the task factory now uses a nullish provider fallback, and the runtime engine awaits `runStream` with renamed protobuf exports. The shared patch functions accept the older forms as well. Automated build verification passes against the original local installation, including syntax, subscription UI, routing, queued actions, subagents, context budgets, reasoning and Fast forwarding. The patch was installed locally on October 7, 2026 and all installed file hashes verified. Live Cursor conversations on 3.23.23 remain unconfirmed.
+Cursor 3.23.23 has reviewed anchors and original file hashes for both workbenches and both local runtimes. Its model map and Plan & Usage children changed, the task factory now uses a nullish provider fallback, and the runtime engine awaits `runStream` with renamed protobuf exports. The shared patch functions accept the older forms as well. Subscription turns also bypass Agent Host's server execution strategy and use the patched AgentClientService path for new messages, resume and compaction; ordinary models keep Cursor's selected strategy. Automated build verification passes against the original local installation. The updated patch was installed locally on October 7, 2026 and all installed file hashes verified. A live bridge request to `gpt-6.1-sol` completed successfully; conversations through Cursor still need manual confirmation.
+
+### WSL workspaces
+
+WSL runs its own Linux extension bundles. After opening a Cursor workspace in the distribution once, close Cursor and install the runtime repairs there:
+
+```powershell
+node scripts/install-wsl.mjs Ubuntu --check
+node scripts/install-wsl.mjs Ubuntu
+```
+
+Replace `Ubuntu` with your distribution name. `--restore` removes the runtime patch using its saved originals. Reopen Cursor to load the patched bundles. Mirrored WSL networking lets the Linux runtime reach the Windows bridge at `127.0.0.1`; other networking configurations need a working connection to that bridge. Ubuntu with mirrored networking was verified locally on October 7, 2026.
 
 ## Remote sessions
 
-In a Remote-SSH window the agent runs on the host, so the host has to reach the bridge. The installer adds a reverse forward to `~/.ssh/config`, inside a marked block it owns:
+On Cursor 3.22.9 and later, a Remote-SSH window runs the agent on the host, so the host has to reach the Windows bridge. The current local installer does not configure SSH forwarding. Add a reverse forward to the relevant host entry in `~/.ssh/config`:
 
 ```
-# >>> cursor subscription links: bridge forwarding >>>
 Host your-server
     RemoteForward 127.0.0.1:43187 127.0.0.1:43187
-# <<< cursor subscription links: bridge forwarding <<<
 ```
 
-The hosts are the ones you have opened in Cursor that are also declared in your `~/.ssh/config`; nothing else is touched, so ssh to anything outside that list, `git push` included, is unaffected. All three links share the block, each owning the line for its own port, and `npm run restore` removes only its own. A copy of the file as it was before the first change is kept as `config.before-cursor-links`.
+Reconnect the SSH window after changing its forwarding. WSL with mirrored networking can reach the Windows bridge through localhost without an SSH forward.
 
 ### The host's own runtime
 
@@ -89,19 +98,13 @@ npm run install:remote -- your-server
 
 It reads the two bundles over ssh, patches and syntax-checks them on the client, writes them back with a rename and keeps the untouched copy beside each file. `--check` reports what would change without writing, and `--restore` puts the originals back. The three links share one manifest on the host, each adding its own provider, so install them in the same order as locally.
 
-**After the first time this is automatic.** A local install walks the hosts in the ssh block, and every host that already carries the manifest is brought to the new build. A host that was never patched is passed over: installing on a machine is a decision of its own, not a side effect of patching this client. `--no-remote` skips the step.
+Run the remote runtime installer again after a Cursor build update. The local installer currently updates Windows files only; it does not call the repository's host-sync helpers automatically.
 
 A Windows host is handled too: its default shell is cmd, so every command travels as an encoded PowerShell script and file contents move as base64 in both directions. `--all` walks the hosts in the ssh block and takes every one that already runs a server for this build; a host you have not opened since the Cursor update has nothing to patch yet, so connect once and run it again.
 
-| Flag | Effect |
-| --- | --- |
-| `--ssh-hosts=a,b` | Configure exactly these hosts instead of the detected ones |
-| `--no-ssh` | Change nothing in `~/.ssh/config` |
-| `--no-remote` | Do not carry the runtime patch to known hosts |
-
 Two things to know. A second ssh session to the same host cannot bind the port again and ssh prints `remote port forwarding failed`; the session still works, and the first one keeps serving the bridge. And the bridge becomes reachable on that host's loopback, so only forward to hosts you trust with it. The bridge still requires its per-installation key.
 
-The agent on the host uses the server's own copy of Cursor's runtime under `~/.cursor-server`, which this patch does not touch. Model selection, tool calls and file edits work from there, but the runtime-side extras this patch adds locally, reasoning effort forwarding and the subagent model repairs, are not present on the host yet.
+The Windows patch supplies the bridge provider configuration. Patching the host's runtime additionally enables the reasoning, subagent and queued-message repairs there. The bridge and ChatGPT sign-in remain on Windows; no separate Codex installation or account credentials are needed on the host.
 
 ## What it adds
 
@@ -167,7 +170,9 @@ node patcher.mjs install --cursor-root "D:\Apps\Cursor\resources\app" --codex-pa
 
 Configuration, a copy of the bridge runtime, model catalogs and original-file backups are stored in `%LOCALAPPDATA%\cursor-gpt-link`. Set `CURSOR_GPT_LINK_HOME` before running the patcher to choose a different state directory. Use the same value for subsequent status and restore commands. The runtime is copied during installation, so moving the repository afterwards does not break autostart. The Node.js executable must stay at its installation path.
 
-## Remote SSH
+## Historical Remote SSH routing (through Cursor 3.22.5)
+
+The following describes the older routing implementation. Cursor 3.22.9 and later use the host's own runtime as described in [Remote sessions](#remote-sessions). Running the older dedicated Windows runtime against Linux workspaces caused Linux paths to be resolved as Windows paths, so current builds preserve execution on the workspace host.
 
 Version 0.1.1 fixes the Remote SSH routing. Model requests run in Cursor's dedicated local runtime and reach the bridge on your PC. Tool calls use Cursor's existing workspace execution path, so file edits and commands still run on the SSH host. The existing approval and cancellation paths are retained.
 

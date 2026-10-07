@@ -31,7 +31,7 @@ function posixShell(run) {
   return {
     kind:'posix', run,
     join: (dir, relative) => path.posix.join(dir, relative),
-    serverDirs: () => run('ls -d ~/.cursor-server/bin/*/*/ 2>/dev/null || true')
+    serverDirs: () => run('ls -d ~/.cursor-server/bin/*/ ~/.cursor-server/bin/*/*/ 2>/dev/null || true')
       .split('\n').map(line => line.trim().replace(/\/$/, '')).filter(Boolean),
     read: file => Buffer.from(run(`base64 -w0 ${quote(file)}`), 'base64').toString('utf8'),
     exists: file => run(`test -e ${quote(file)} && echo yes || echo no`).trim() === 'yes',
@@ -88,6 +88,16 @@ function connect(host, {timeout = 10, quiet = false} = {}) {
   return windows;
 }
 
+// WSL uses the same Linux bundles and backup protocol as an SSH host. Keep
+// the distribution name in an argv entry rather than interpolating it in sh.
+export function connectWsl(distribution, execute = execFileSync) {
+  if (typeof distribution !== 'string' || !distribution.trim()) throw new Error('WSL distribution required');
+  const run = (command, input) => execute('wsl.exe',
+    ['--distribution', distribution, '--exec', 'sh', '-c', command],
+    {input, encoding:'utf8', maxBuffer:256 * 1024 * 1024, windowsHide:true});
+  return posixShell(run);
+}
+
 export function localCommit(appRoot = process.env.CURSOR_APP_ROOT ||
     path.join(process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData/Local'), 'Programs/cursor/resources/app')) {
   return JSON.parse(fs.readFileSync(path.join(appRoot, 'product.json'), 'utf8')).commit;
@@ -113,8 +123,8 @@ function checkedPatch(source, patchRuntime) {
   return patched;
 }
 
-export function installRemote({host, link, marker, patchRuntime, prefix, dir, check = false, log = console.log}) {
-  const ssh = connect(host);
+export function installRemote({host, link, marker, patchRuntime, prefix, dir, check = false, log = console.log, transport}) {
+  const ssh = transport ?? connect(host);
   const commit = localCommit();
   const {dirs, dir:serverDir} = serverDirectory(ssh, commit, dir);
   log(`host ${host}: ${dirs.length} server directories, ${serverDir ? 1 : 0} for the local build ${commit.slice(0, 7)}`);
@@ -159,8 +169,8 @@ export function installRemote({host, link, marker, patchRuntime, prefix, dir, ch
   return {changed:true, host};
 }
 
-export function restoreRemote({host, link, dir, log = console.log}) {
-  const ssh = connect(host);
+export function restoreRemote({host, link, dir, log = console.log, transport}) {
+  const ssh = transport ?? connect(host);
   const {dir:serverDir} = serverDirectory(ssh, localCommit(), dir);
   if (!serverDir) { log(`No server directory for this build on ${host}.`); return {changed:false, host}; }
   const manifestPath = ssh.join(serverDir, manifestName);

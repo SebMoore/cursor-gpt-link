@@ -16,6 +16,7 @@ import {buildPatches} from '../src/patches.mjs';
 import {supportedBuild} from '../src/supported-builds.mjs';
 import {verifySubagentRegistration} from './subagent-registration-check.mjs';
 import {verifyWorkbenchRouting} from './workbench-routing-check.mjs';
+import {verifyAgentHostRouting} from './agent-host-routing-check.mjs';
 
 const root = process.argv[2];
 if (!root) throw new Error('Usage: node scripts/verify-build.mjs PATH_TO_ORIGINAL_RESOURCES_APP');
@@ -35,6 +36,10 @@ try {
     execFileSync(process.execPath, ['--check', candidate], {stdio:'pipe', windowsHide:true});
     console.log('Syntax and unique anchors: ' + path.relative(root, file.path));
     if (file.path.includes('workbench.')) {
+      if(build.version==='3.23.23'){
+        await verifyAgentHostRouting(file.content);
+        console.log('Agent Host subscription routing for run, resume and summarize: passed');
+      }
       if(['3.20.23','3.21.1','3.21.9','3.21.12','3.21.13','3.21.16','3.21.18','3.22.5','3.22.9','3.22.12','3.23.23'].includes(build.version))verifySubscriptionUi(file.content);
       if(['3.20.21','3.20.23','3.21.1','3.21.9','3.21.12','3.21.13','3.21.16','3.21.18','3.22.5','3.22.9','3.22.12','3.23.23'].includes(build.version))await verifyConversationActionsWorkbench(file.content,['chatgpt-codex/']);
       if(['3.20.21','3.20.23','3.21.1','3.21.9','3.21.12','3.21.13','3.21.16','3.21.18','3.22.5','3.22.9','3.22.12','3.23.23'].includes(build.version)){verifyMaxMode(file.content);await verifySubagentLifecycle(file.content,['chatgpt-codex/']);}

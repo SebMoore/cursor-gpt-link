@@ -13,6 +13,7 @@ import {patchRemoteRouting} from './remote-routing.mjs';
 import {wrapRuntime} from './patches-runtime.mjs';
 import {pickerSectionHelpersSrc, patchPickerSections} from './picker-sections.mjs';
 import {usageLabelHelpersSrc} from './usage-label.mjs';
+import {patchAgentHostRouting} from './agent-host-routing.mjs';
 
 function replaceOnce(source,from,to){
   if(source.split(from).length!==2)throw new Error('Patch anchor not unique: '+from.slice(0,100));
@@ -73,7 +74,7 @@ wb=addUsage(wb,{fn:'function HgS(e){const t=o6p(144)',jsx:'NgS',
   original:'title:"Plan & Usage",children:[Yt,jt,an,Vt,mt]',
   claudeOnly:'title:"Plan & Usage",children:[Yt,jt,an,Vt,mt,NgS(__claudeUsageSection,{})]',
   symbols:{jsx:'NgS',useState:'$fr',useEffect:'OmS',card:'sv',zs:'As',bar:'zA',barStyle:'zfr'}});
-wb=patchMaxMode(patchSubagentSettingsWorkbench(wb));
+wb=patchAgentHostRouting(patchMaxMode(patchSubagentSettingsWorkbench(wb)),'desktop');
 wb=patchSubagentBubbles(patchRemoteRouting(wb,'desktop','3.23.23'),'desktop','3.23.23');
 wb=patchSubagentLifecycle(wb,'desktop','chatgpt-codex/','3.23.23');
 wb=patchConversationActionsWorkbench(wb,'desktop','chatgpt-codex/');
@@ -106,7 +107,7 @@ glass=addUsage(glass,{fn:'function Lbw(t){const e=zOf(144)',jsx:'Dbw',
   original:'title:"Plan & Usage",children:[it,gt,ht,at,ut]',
   claudeOnly:'title:"Plan & Usage",children:[it,gt,ht,at,ut,Dbw(__claudeUsageSection,{})]',
   symbols:{jsx:'Dbw',useState:'G1s',useEffect:'Mbw',card:'gf',zs:'Ds',bar:'Gg',barStyle:'FDi'}});
-glass=patchMaxMode(patchSubagentSettingsWorkbench(glass));
+glass=patchAgentHostRouting(patchMaxMode(patchSubagentSettingsWorkbench(glass)),'glass');
 glass=patchSubagentBubbles(patchRemoteRouting(glass,'glass','3.23.23'),'glass','3.23.23');
 glass=patchSubagentLifecycle(glass,'glass','chatgpt-codex/','3.23.23');
 glass=patchConversationActionsWorkbench(glass,'glass','chatgpt-codex/');
