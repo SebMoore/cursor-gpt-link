@@ -80,6 +80,7 @@ function once(source, before, after) {
 // Minified identifiers per reviewed build: the subagent service used to cancel a
 // tree, and the untracked reader around the transcript conversation map.
 const lifecycleSymbols = {
+  '3.23.23': {desktop:{service:'QQe', untrack:'nr'},glass:{service:'vpe', untrack:'ps'}},
   '3.20.21': {desktop:{service:'SZe', untrack:'tr'}, glass:{service:'Cde', untrack:'cs'}},
   '3.20.23': {desktop:{service:'yZe', untrack:'tr'}, glass:{service:'Tde', untrack:'cs'}},
   '3.21.1':  {desktop:{service:'hZe', untrack:'Xi'}, glass:{service:'ude', untrack:'Kr'}},

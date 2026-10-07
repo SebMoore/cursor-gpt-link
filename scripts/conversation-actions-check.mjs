@@ -59,7 +59,7 @@ export async function verifyConversationActionsWorkbench(source,prefixes){
 }
 
 export function verifyConversationActionsRuntime(source){
-  assert.match(source,/subscriptionActionReceiver\(i,[\w$]+\.subscriptionActionChannel,bytes=>[\w$]+\([\w$]+\.QF.fromBinary\(bytes\),[\w$]+\),new [\w$]+\)/);
+  assert.match(source,/subscriptionActionReceiver\(i,[\w$]+\.subscriptionActionChannel,bytes=>[\w$]+\([\w$]+\.QFf?\.fromBinary\(bytes\),[\w$]+\),new [\w$]+\)/);
   assert.match(source,/actionHandlers.get\("executePlanAction"\).__subscriptionPlanPrepends=[\w$]+\.subscriptionActionChannel\?/);
   // 3.21.1 rotated the minified locals of the plan initializer.
   const insertion=source.search(/await prependSubscriptionPlanMessages\(this\.__subscriptionPlanPrepends,e,[\w$]+,[\w$]+,this\.config,this\.resourceAccessor,/);
@@ -70,4 +70,3 @@ export function verifyConversationActionsRuntime(source){
   assert.match(source,/\.\.\.[\w$]+\.runOptions,requestedModel:/,'DTO retains the action channel and plan prepends');
   console.log('Runtime action receiver and native plan initializer wiring passed.');
 }
-

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {configureTaskProps,selectedParameters,selectedModelIds} from '../src/subagent-settings.mjs';
 export function verifySubagentSettings(source) {
  // 3.21.1 rotated the minified locals; the resolver call is what identifies it.
- const match=source.match(/function ([\w$]+)\(e\)\{const t=\(\)=>!1,([\w$]+)=([\w$]+)\(e\),([\w$]+)=null!=\2\?\2:e\.localProvider;/);
+ const match=source.match(/function ([\w$]+)\(e\)\{const t=\(\)=>!1,([\w$]+)=([\w$]+)\(e\)(?:,([\w$]+)=null!=\2\?\2:e\.localProvider|\?\?e\.localProvider);/);
  assert.ok(match,'Native local task factory found');
  const tail=source.slice(match.index),end=tail.search(/function [\w$]+\(e\)\{return e instanceof/);
  assert.ok(end>0,'Native local task factory end found');

@@ -26,7 +26,7 @@ export function verifyMaxMode(source) {
  console.log('Native Max toggle: context changes; every effort and Fast value survives; ordinary models retain native behavior.');
 }
 export function verifyContextBudget(source,entry) {
- const marker='return Object.assign(Object.assign({modelId:t,apiTypes:';
+ const marker=source.includes('return{modelId:t,apiTypes:')?'return{modelId:t,apiTypes:':'return Object.assign(Object.assign({modelId:t,apiTypes:';
  // The two runtime bundles order these minified locals differently.
  const pivot=source.indexOf(marker),start=source.lastIndexOf('function(e,t){',pivot),end=pivot+source.slice(pivot).search(/\}\([\w$]+,[\w$]+\)/);
  assert.ok(start>=0&&end>start,'Native model metadata decoder found');
@@ -34,11 +34,12 @@ export function verifyContextBudget(source,entry) {
  const parse=new Function(number,'return ('+fn+')')(value=>typeof value==='number'&&Number.isFinite(value)&&value>0?Math.floor(value):undefined);
  const metadata=parse(entry,entry.id);assert.equal(metadata.contextLength,entry.capabilities.context_length);
  assert.equal(parse({id:entry.id,context_window:metadata.contextLength},entry.id).contextLength,undefined,'Old top-level field was ignored');
- const m=source.match(/([\w$]+)=null!\=\=\(([\w$]+)=i.contextLength\)[\s\S]{0,2000}?,([\w$]+)=void 0!==([\w$]+)\?Math.min\(\4,null!=\1\?\1:\4\):\1/);
+ const modern=source.match(/([\w$]+)=([\w$]+)\.contextLength\?\?[\s\S]{0,2000}?,([\w$]+)=void 0!==([\w$]+)\?Math.min\(\4,\1\?\?\4\):\1/);
+ const m=modern??source.match(/([\w$]+)=null!\=\=\(([\w$]+)=i.contextLength\)[\s\S]{0,2000}?,([\w$]+)=void 0!==([\w$]+)\?Math.min\(\4,null!=\1\?\1:\4\):\1/);
  assert.ok(m,'Native context budget found');
  const window=m[1],scratch=m[2],budgeted=m[3];
  const catalog=m[0].match(/of ([\w$]+).values\(\)/)[1],key=m[0].match(/e.id===([\w$]+)/)[1];
- const budget=new Function('i','e',catalog,key,'var '+scratch+';const '+m[0]+';return '+budgeted+';');
+ const budget=new Function(modern?modern[2]:'i','e',catalog,key,(modern?'':'var '+scratch+';')+'const '+m[0]+';return '+budgeted+';');
  for(const requested of [Math.min(200000,metadata.contextLength),metadata.contextLength,metadata.contextLength*2]){
   assert.equal(budget(metadata,{modelId:entry.id,modelParameters:[{id:'context',value:String(requested)}]},new Map(),'context'),Math.min(requested,metadata.contextLength));
  }

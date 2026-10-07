@@ -9,7 +9,8 @@ export async function verifyWorkbenchRouting(source, version, prefix='chatgpt-co
   const remoteRoute = tunnelledBuilds.includes(version) ? 'workspace' : 'dedicated';
   const name=source.includes('async _subscriptionNativeLocalAgent(')?'_subscriptionNativeLocalAgent':'runLocalAgentInExtensionHost';
   const start = source.indexOf('async '+name+'(');
-  const end = source.indexOf('}runLocalAgentInDedicatedExtensionHost(', start);
+  const boundary = version === '3.23.23' ? '}async prewarm(' : '}runLocalAgentInDedicatedExtensionHost(';
+  const end = source.indexOf(boundary, start);
   assert.ok(start >= 0 && end > start, 'Native workbench routing method found');
   const method = source.slice(start, end + 1).replace('async '+name+'(', 'async runLocalAgentInExtensionHost(');
   const identity = value => value;

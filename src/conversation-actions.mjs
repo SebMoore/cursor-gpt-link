@@ -164,24 +164,24 @@ export function patchConversationActionsWorkbench(source,surface,prefix){
 
 export function patchConversationActionsRuntime(source,prefix){
   const combined=registry(source,prefix);if(combined)return combined;
-  // The two runtime bundles minify this generator differently and Cursor 3.21.1
-  // rotated their local names, so read the symbols out of the match.
-  const engines=[...source.matchAll(/new [\w$]+\([\w$]+\.promptSession\),new ([\w$]+)\);yield ([\w$]+)\.runStream\(e,[\w$]+\([\w$]+,([\w$]+)\),([\w$]+)\(([\w$]+),\3\)/g)];
+  // Read locals from either runtime. 3.23.23 awaits the engine instead of
+  // yielding it, and renames the QF/RG protobuf exports to QFf/RGk.
+  const engines=[...source.matchAll(/new [\w$]+\([\w$]+\.promptSession\),new ([\w$]+)\);(?:yield|await) ([\w$]+)\.runStream\(e,[\w$]+\([\w$]+,([\w$]+)\),([\w$]+)\(([\w$]+),\3\)/g)];
   if(engines.length!==1)throw new Error('Local engine receiver anchor is not unique');
   const [receiver,inbox,engine,privacy,convert]=engines[0];
   const engineStart=engines[0].index;
   const moduleStart=source.lastIndexOf('class ',engineStart);
-  const runHeader=source.slice(moduleStart,engineStart).match(/run\(e,t,[\w$]+,[\w$]+,[\w$]+,[\w$]+,i,a,l,([\w$]+),([\w$]+)\)/);
+  const runHeader=source.slice(moduleStart,engineStart).match(/run\(e,t,[\w$]+,[\w$]+,[\w$]+,[\w$]+,i,a,[\w$]+,([\w$]+),([\w$]+)\)/);
   if(!runHeader)throw new Error('Local engine run options missing');
   const opts=runHeader[2];
   // Resolve the protobuf namespace from this module instead of assuming the
   // entry-point namespace or the symbols used by the other runtime bundle.
-  const planMessages=new Set([...source.matchAll(/([\w$]+)\.RG[.(]/g)].map(m=>m[1]));
-  const namespaces=[...source.matchAll(/([\w$]+)\.QF[.(]/g)].filter(m=>planMessages.has(m[1]));
+  const planMessages=new Map([...source.matchAll(/([\w$]+)\.(RGk?)[.(]/g)].map(m=>[m[1],m[2]]));
+  const namespaces=[...source.matchAll(/([\w$]+)\.(QFf?)[.(]/g)].filter(m=>planMessages.has(m[1]));
   if(!namespaces.length)throw new Error('Conversation action protobuf namespace missing');
-  const ns=namespaces.reduce((best,m)=>Math.abs(m.index-engineStart)<Math.abs(best.index-engineStart)?m:best)[1];
-  const replacement=receiver.replace('new '+inbox,`subscriptionActionReceiver(i,${opts}.subscriptionActionChannel,bytes=>${convert}(${ns}.QF.fromBinary(bytes),${privacy}),new ${inbox})`)
-    .replace(';yield ',`;${engine}.actionHandlers.get("executePlanAction").__subscriptionPlanPrepends=${opts}.subscriptionActionChannel?${opts}.subscriptionPlanPrepends?.map(bytes=>${ns}.RG.fromBinary(Uint8Array.from(bytes))):undefined;yield `);
+  const namespace=namespaces.reduce((best,m)=>Math.abs(m.index-engineStart)<Math.abs(best.index-engineStart)?m:best),ns=namespace[1];
+  const replacement=receiver.replace('new '+inbox,`subscriptionActionReceiver(i,${opts}.subscriptionActionChannel,bytes=>${convert}(${ns}.${namespace[2]}.fromBinary(bytes),${privacy}),new ${inbox})`)
+    .replace(/;(yield|await) /,(_,keyword)=>`;${engine}.actionHandlers.get("executePlanAction").__subscriptionPlanPrepends=${opts}.subscriptionActionChannel?${opts}.subscriptionPlanPrepends?.map(bytes=>${ns}.${planMessages.get(ns)}.fromBinary(Uint8Array.from(bytes))):undefined;${keyword} `);
   source=once(source,receiver,replacement);
   // Locate the plan initializer by its unique file-content resolution.
   const pattern=/async initializeConversation\(e,t,[\w$]+,([\w$]+),[\w$]+\)\{const\{requestContext:([\w$]+),provenance:[\w$]+\}=await [\w$]+\(([^;]+?)\),([\w$]+)=t\.planFileContent/;

@@ -1,13 +1,14 @@
 # Testing notes
 
-Updated on September 29, 2026.
+Updated on October 7, 2026.
 
 ## Environment
 
 | Component | Version |
 | --- | --- |
 | Operating system | Windows, x64 |
-| Cursor | 3.22.12, 3.22.9, 3.22.5, 3.21.18, 3.21.16, 3.21.13, 3.21.12, 3.21.9, 3.21.1, 3.20.23, 3.20.21, 3.20.17, 3.20.11 and 3.20.7 |
+| Cursor | 3.23.23, 3.22.12, 3.22.9, 3.22.5, 3.21.18, 3.21.16, 3.21.13, 3.21.12, 3.21.9, 3.21.1, 3.20.23, 3.20.21, 3.20.17, 3.20.11 and 3.20.7 |
+| Cursor 3.23.23 commit | `2dac2428994fe34f12658d9ecad1541b98db2c00` |
 | Cursor 3.22.12 commit | `3a92974361033b2051526321308c2740fe5912c0` |
 | Cursor 3.22.9 commit | `2ca0f45baa06796a86f6c6ba2b9bedacaf94c370` |
 | Cursor 3.22.5 commit | `a00aa8754ab5bae70b637d98e126f9dbd4e1e5d0` |
@@ -67,6 +68,16 @@ Verified without touching an installation, against copies of the original 3.22.9
 - a dry run on a copy of a real configuration, with `ssh -G` used to confirm that OpenSSH parses the result, attaches the three forwards to a configured host and leaves an unrelated host without any.
 
 Not yet confirmed: a live remote turn. The host's own runtime under `~/.cursor-server` is unpatched, so reasoning effort forwarding and the subagent model repairs are missing there.
+
+## Cursor 3.23.23 update
+
+Verified on October 7, 2026 against the original Windows x64 installation. The extractor found all 50 symbol roles on each workbench surface without missing or ambiguous matches. Build-specific anchors account for the new model mapper and five Plan & Usage children. Original hashes of the six installer targets are recorded in [the 3.23.23 metadata](../src/supported-build-3.23.23.json).
+
+Both extension runtimes changed beyond identifier rotation: the task factory folds its provider fallback into `??`, and the engine awaits `runStream` instead of yielding it. ConversationAction and UserMessage exports are now `QFf` and `RGk`. Shared patch functions support these shapes alongside the old ones. The build verifier also recognises the new metadata object literal, nullish context budget and normalizer call, and the relocated workbench method boundary.
+
+`npm test` and `scripts/verify-build.mjs` pass. The latter generates temporary candidates without changing the installation, syntax-checks every JavaScript target and exercises both surfaces and both runtimes: subscription settings and login registration, queued actions and Build forwarding, stop and transcript lifecycle, Task registration, native SSH routing, Explore selection, inherited models, context limits, reasoning and Fast. The desktop checksum matches the patched product metadata.
+
+Not verified: installation into the live application, model selection and conversations in either window, tool calls and file edits, remote SSH turns, attachments, or coexistence with companion links. No Cursor source or credentials are committed. Earlier original builds were unavailable for full regression verification.
 
 ## Cursor 3.22.12 update
 

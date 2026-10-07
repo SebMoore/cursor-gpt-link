@@ -21,6 +21,7 @@ export function ensureChatgptTaskBubble(service, request, parent, taskType, Para
 // Minified identifiers per reviewed build. Each entry names the id-trimming
 // helper, the Task tool-call type, its parameter message and the capability.
 const bubbleSymbols = {
+  '3.23.23': {desktop:{trim:'VY', task:'Qe.TASK_V2', params:'V5e', former:'as.TOOL_FORMER'},glass:{trim:'rle', task:'bt.TASK_V2', params:'i$e', former:'to.TOOL_FORMER'}},
   '3.20.17': {desktop:{trim:'BK', task:'Xe.TASK_V2', params:'$Be', former:'Xr.TOOL_FORMER'},
               glass:  {trim:'Roe',task:'vt.TASK_V2', params:'O7e', former:'Zs.TOOL_FORMER'}},
   '3.20.21': {desktop:{trim:'FK', task:'Xe.TASK_V2', params:'UBe', former:'Xr.TOOL_FORMER'},

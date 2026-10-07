@@ -8,8 +8,9 @@ This release targets the reviewed Windows builds listed below. It is not a gener
 
 | Item | Current status |
 | --- | --- |
-| Cursor | 3.22.12, 3.22.9, 3.22.5, 3.21.18, 3.21.16, 3.21.13, 3.21.12, 3.21.9, 3.21.1, 3.20.23, 3.20.21, 3.20.17, 3.20.11 and 3.20.7, Windows x64 |
-| Latest Cursor commit | `3a92974361033b2051526321308c2740fe5912c0` (3.22.12) |
+| Cursor | 3.23.23, 3.22.12, 3.22.9, 3.22.5, 3.21.18, 3.21.16, 3.21.13, 3.21.12, 3.21.9, 3.21.1, 3.20.23, 3.20.21, 3.20.17, 3.20.11 and 3.20.7, Windows x64 |
+| Latest Cursor commit | `2dac2428994fe34f12658d9ecad1541b98db2c00` (3.23.23) |
+| Cursor 3.22.12 commit | `3a92974361033b2051526321308c2740fe5912c0` |
 | Cursor 3.22.9 commit | `2ca0f45baa06796a86f6c6ba2b9bedacaf94c370` |
 | Cursor 3.22.5 commit | `a00aa8754ab5bae70b637d98e126f9dbd4e1e5d0` |
 | Cursor 3.21.18 commit | `c4730f7d93d787d9ab120af715999f0345ee5bc0` |
@@ -21,7 +22,7 @@ This release targets the reviewed Windows builds listed below. It is not a gener
 | Previous Cursor commit | `b23e0e2d3c0fc9bb9311f4390230a120ccc9aa50` (3.20.23) |
 | Cursor 3.20.11 commit | `69d099d6568dc97e110ba8184614faf51c4040b0` |
 | Oldest Cursor commit | `979197d5570b168c034c634b3e21f2bea3ea5be0` (3.20.7) |
-| Latest local test date | September 29, 2026 |
+| Latest local test date | October 7, 2026 |
 | Node.js used for testing | 26.7.0 |
 | Codex CLI used for testing | 0.153.4 |
 | Text generation through the bridge | Verified with GPT-6 Astra |
@@ -62,6 +63,8 @@ On Cursor 3.20.21 and 3.20.23, stopping a subscription chat also cancels its act
 
 On Cursor 3.20.21 and 3.20.23, queued follow-ups are forwarded to the local runtime. Starting Build also preserves human messages that have not reached the conversation checkpoint yet. Delivery is confirmed by native message events, and stopping the chat prevents queued work from starting another run. Automated queue and build checks passed; manual Plan-to-Build validation is pending.
 
+
+Cursor 3.23.23 has reviewed anchors and original file hashes for both workbenches and both local runtimes. Its model map and Plan & Usage children changed, the task factory now uses a nullish provider fallback, and the runtime engine awaits `runStream` with renamed protobuf exports. The shared patch functions accept the older forms as well. Automated build verification passes against the original local installation, including syntax, subscription UI, routing, queued actions, subagents, context budgets, reasoning and Fast forwarding. This patch has not been installed or tested through live Cursor conversations on 3.23.23.
 
 ## Remote sessions
 

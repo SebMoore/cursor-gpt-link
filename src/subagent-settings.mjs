@@ -35,8 +35,8 @@ export function patchSubagentSettingsWorkbench(source) {
     +'\n'+definition(selectedModelIds,'__ChatgptSelectedModelIds')+'\n';
 }
 export function patchSubagentSettingsRuntime(source) {
-  // Cursor 3.21.1 rotated the minified locals in both runtime bundles.
-  const matches=[...source.matchAll(/function ([\w$]+)\(e\)\{const t=\(\)=>!1,([\w$]+)=[\w$]+\(e\),([\w$]+)=null!=\2\?\2:e\.localProvider;/g)];
+  // 3.23.23 folds the provider fallback into a nullish-coalescing expression.
+  const matches=[...source.matchAll(/function ([\w$]+)\(e\)\{const t=\(\)=>!1,([\w$]+)=[\w$]+\(e\)(?:,([\w$]+)=null!=\2\?\2:e\.localProvider|\?\?e\.localProvider);/g)];
   if(matches.length!==1)throw new Error('Local task configuration anchor is not unique');
   const match=matches[0],original=match[1];
   source=once(source,match[0],'function '+original+'(e){return __ChatgptConfigureTaskProps(e,__ChatgptNativeTaskProps(e))}'+match[0].replace('function '+original+'(','function __ChatgptNativeTaskProps('));
