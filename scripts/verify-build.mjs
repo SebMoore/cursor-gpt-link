@@ -17,6 +17,7 @@ import {supportedBuild} from '../src/supported-builds.mjs';
 import {verifySubagentRegistration} from './subagent-registration-check.mjs';
 import {verifyWorkbenchRouting} from './workbench-routing-check.mjs';
 import {verifyAgentHostRouting} from './agent-host-routing-check.mjs';
+import {verifyAgentExecRegistration} from './agent-exec-registration-check.mjs';
 
 const root = process.argv[2];
 if (!root) throw new Error('Usage: node scripts/verify-build.mjs PATH_TO_ORIGINAL_RESOURCES_APP');
@@ -48,6 +49,10 @@ try {
       console.log('Native workbench SSH routing and workspace resources: passed');
     }
     if (!file.path.includes('cursor-agent-exec') && !file.path.includes('cursor-local-agent-runtime')) continue;
+    if(build.version==='3.23.23' && file.path.includes('cursor-agent-exec')){
+      verifyAgentExecRegistration(file.content);
+      console.log('Agent-exec provider registration with Agent Host enabled: passed');
+    }
     if(['3.20.17','3.20.21','3.20.23','3.21.1','3.21.9','3.21.12','3.21.13','3.21.16','3.21.18','3.22.5','3.22.9','3.22.12','3.23.23'].includes(build.version))await verifySubagentModels(file.content);
     if(['3.20.21','3.20.23','3.21.1','3.21.9','3.21.12','3.21.13','3.21.16','3.21.18','3.22.5','3.22.9','3.22.12','3.23.23'].includes(build.version)){verifyConversationActionsRuntime(file.content);verifySubagentSettings(file.content);verifyContextBudget(file.content,{id:'chatgpt-codex/test',capabilities:{context_length:272000}});}
     // 3.21.1 rotated these minified locals; their positions are what matters.

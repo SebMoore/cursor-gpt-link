@@ -64,7 +64,7 @@ On Cursor 3.20.21 and 3.20.23, stopping a subscription chat also cancels its act
 On Cursor 3.20.21 and 3.20.23, queued follow-ups are forwarded to the local runtime. Starting Build also preserves human messages that have not reached the conversation checkpoint yet. Delivery is confirmed by native message events, and stopping the chat prevents queued work from starting another run. Automated queue and build checks passed; manual Plan-to-Build validation is pending.
 
 
-Cursor 3.23.23 has reviewed anchors and original file hashes for both workbenches and both local runtimes. Its model map and Plan & Usage children changed, the task factory now uses a nullish provider fallback, and the runtime engine awaits `runStream` with renamed protobuf exports. The shared patch functions accept the older forms as well. Subscription turns also bypass Agent Host's server execution strategy and use the patched AgentClientService path for new messages, resume and compaction; ordinary models keep Cursor's selected strategy. Automated build verification passes against the original local installation. The updated patch was installed locally on October 7, 2026 and all installed file hashes verified. A live bridge request to `gpt-6.1-sol` completed successfully; conversations through Cursor still need manual confirmation.
+Cursor 3.23.23 has reviewed anchors and original file hashes for both workbenches and both local runtimes. Its model map and Plan & Usage children changed, the task factory now uses a nullish provider fallback, and the runtime engine awaits `runStream` with renamed protobuf exports. The shared patch functions accept the older forms as well. Subscription turns also bypass Agent Host's server execution strategy and use the patched AgentClientService path for new messages, resume and compaction; ordinary models keep Cursor's selected strategy. The agent-exec provider registers alongside Agent Host so that subscription turns can start. Automated build verification passes against the original local installation. The updated Windows and Ubuntu patches were installed on October 7, 2026 and their file hashes verified. A short `gpt-6.1-sol` conversation through Cursor in Ubuntu WSL was confirmed by the user and runtime logs (HTTP 200, output tokens and a successful request).
 
 ### WSL workspaces
 
@@ -75,7 +75,7 @@ node scripts/install-wsl.mjs Ubuntu --check
 node scripts/install-wsl.mjs Ubuntu
 ```
 
-Replace `Ubuntu` with your distribution name. `--restore` removes the runtime patch using its saved originals. Reopen Cursor to load the patched bundles. Mirrored WSL networking lets the Linux runtime reach the Windows bridge at `127.0.0.1`; other networking configurations need a working connection to that bridge. Ubuntu with mirrored networking was verified locally on October 7, 2026.
+Replace `Ubuntu` with your distribution name. `--restore` removes the runtime patch using its saved originals. To update an existing patch on the same Cursor build, run `--restore` and then install again while Cursor is closed. Reopen Cursor to load the patched bundles. The runtime patch also registers agent-exec alongside Agent Host, which otherwise disables its provider and leaves subscription turns waiting at startup. Mirrored WSL networking lets the Linux runtime reach the Windows bridge at `127.0.0.1`; other networking configurations need a working connection to that bridge. Ubuntu with mirrored networking was verified locally on October 7, 2026.
 
 ## Remote sessions
 

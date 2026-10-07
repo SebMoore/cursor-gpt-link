@@ -14,6 +14,7 @@ import {wrapRuntime} from './patches-runtime.mjs';
 import {pickerSectionHelpersSrc, patchPickerSections} from './picker-sections.mjs';
 import {usageLabelHelpersSrc} from './usage-label.mjs';
 import {patchAgentHostRouting} from './agent-host-routing.mjs';
+import {patchAgentExecRegistration} from './agent-exec-registration.mjs';
 
 function replaceOnce(source,from,to){
   if(source.split(from).length!==2)throw new Error('Patch anchor not unique: '+from.slice(0,100));
@@ -113,7 +114,7 @@ glass=patchSubagentLifecycle(glass,'glass','chatgpt-codex/','3.23.23');
 glass=patchConversationActionsWorkbench(glass,'glass','chatgpt-codex/');
 pending.push({path:glassPath,content:glass});
 for(const relative of ['extensions/cursor-agent-exec/dist/main.js','extensions/cursor-local-agent-runtime/dist/main.js']){
- pending.push({path:path.join(root,relative),content:patchConversationActionsRuntime(patchSubagentSettingsRuntime(patchSubagentModel(wrapRuntime(fs.readFileSync(path.join(root,relative),'utf8')))),'chatgpt-codex/')});
+ pending.push({path:path.join(root,relative),content:patchAgentExecRegistration(patchConversationActionsRuntime(patchSubagentSettingsRuntime(patchSubagentModel(wrapRuntime(fs.readFileSync(path.join(root,relative),'utf8')))),'chatgpt-codex/'))});
 }
 const mainPath=path.join(root,'out/main.js');
 pending.push({path:mainPath,content:fs.readFileSync(mainPath,'utf8')+buildAutostart({nodePath,bridgePath,stateDir})});

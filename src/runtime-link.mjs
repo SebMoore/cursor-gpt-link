@@ -5,11 +5,12 @@ import {wrapRuntime} from './patches-runtime.mjs';
 import {patchSubagentModel} from './subagent-model.mjs';
 import {patchSubagentSettingsRuntime} from './subagent-settings.mjs';
 import {patchConversationActionsRuntime} from './conversation-actions.mjs';
+import {patchAgentExecRegistration} from './agent-exec-registration.mjs';
 
 export const link = 'cursor-gpt-link';
 export const prefix = 'chatgpt-codex/';
 export const marker = 't.startsWith("chatgpt-codex/")';
 
 export function patchRuntime(source) {
-  return patchConversationActionsRuntime(patchSubagentSettingsRuntime(patchSubagentModel(wrapRuntime(source))), prefix);
+  return patchAgentExecRegistration(patchConversationActionsRuntime(patchSubagentSettingsRuntime(patchSubagentModel(wrapRuntime(source))), prefix));
 }
